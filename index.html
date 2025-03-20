@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+.calculator-btn:active {
+transform: scale(0.95);
+}
+.calculator-btn[onclick="deleteLast()"]:active {
+animation: shake 0.2s ease-in-out;
+}
+@keyframes shake {
+0%, 100% { transform: translateX(0); }
+25% { transform: translateX(-2px); }
+75% { transform: translateX(2px); }
+}
+@media (max-width: 768px) {
+  .calculator-btn {
+    padding: 0.75rem !important;
+  }
+}
+.calculator-display::-webkit-scrollbar,
+.history-list::-webkit-scrollbar {
+width: 4px;
+}
+.calculator-display::-webkit-scrollbar-track,
+.history-list::-webkit-scrollbar-track {
+background: #f1f1f1;
+border-radius: 4px;
+}
+.calculator-display::-webkit-scrollbar-thumb,
+.history-list::-webkit-scrollbar-thumb {
+background: #888;
+border-radius: 4px;
+}
+.calculator-display::-webkit-scrollbar-thumb:hover,
+.history-list::-webkit-scrollbar-thumb:hover {
+background: #555;
+}
+</style>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+primary: '#4F46E5',
+secondary: '#6366F1'
+},
+borderRadius: {
+'none': '0px',
+'sm': '4px',
+DEFAULT: '8px',
+'md': '12px',
+'lg': '16px',
+'xl': '20px',
+'2xl': '24px',
+'3xl': '32px',
+'full': '9999px',
+'button': '8px'
+}
+}
+}
+}
+</script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+<div class="flex gap-4 flex-col md:flex-row p-4 md:p-0">
+<div class="bg-white p-4 md:p-8 rounded-2xl shadow-2xl w-full md:w-[360px]">
+<div class="mb-4 text-right calculator-display bg-gray-100 p-4 rounded-xl h-24 overflow-x-auto flex flex-col justify-end">
+<div class="text-gray-500 text-sm previous-operation"></div>
+<div class="text-3xl font-semibold current-operation">0</div>
+</div>
+<div class="grid grid-cols-4 gap-3">
+<button class="calculator-btn bg-red-500 hover:bg-red-600 text-white p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="clearAll()">C</button>
+<button class="calculator-btn bg-gray-200 hover:bg-gray-300 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap group relative" onclick="deleteLast()">
+<i class="ri-delete-back-2-line"></i>
+<span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200">Backspace</span>
+</button>
+<button class="calculator-btn bg-gray-200 hover:bg-gray-300 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendOperation('%')">%</button>
+<button class="calculator-btn bg-primary hover:bg-primary/90 text-white p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendOperation('÷')">÷</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('7')">7</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('8')">8</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('9')">9</button>
+<button class="calculator-btn bg-primary hover:bg-primary/90 text-white p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendOperation('×')">×</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('4')">4</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('5')">5</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('6')">6</button>
+<button class="calculator-btn bg-primary hover:bg-primary/90 text-white p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendOperation('-')">-</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('1')">1</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('2')">2</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('3')">3</button>
+<button class="calculator-btn bg-primary hover:bg-primary/90 text-white p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendOperation('+')">+</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('0')">0</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('00')">00</button>
+<button class="calculator-btn bg-white hover:bg-gray-100 border border-gray-200 p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="appendNumber('.')">.</button>
+<button class="calculator-btn bg-secondary hover:bg-secondary/90 text-white p-4 rounded-button text-xl font-medium cursor-pointer whitespace-nowrap" onclick="calculate()">=</button>
+</div>
+</div>
+<div id="historyPanel" class="fixed top-0 right-0 bottom-0 w-full md:w-[320px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold flex items-center gap-2">
+        <i class="ri-history-line w-5 h-5 flex items-center justify-center"></i>
+        History
+      </h3>
+      <button onclick="toggleHistory()" class="text-gray-500 hover:text-gray-700">
+        <i class="ri-close-line w-6 h-6 flex items-center justify-center"></i>
+      </button>
+    </div>
+    <div class="history-list space-y-3 h-[calc(100vh-120px)] overflow-y-auto" id="historyList"></div>
+  </div>
+</div>
+<button onclick="toggleHistory()" class="fixed bottom-6 right-6 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary/90 transition-colors z-40">
+  <i class="ri-history-line w-6 h-6 flex items-center justify-center"></i>
+</button>
+</div>
+<script>
+function toggleHistory() {
+  const historyPanel = document.getElementById('historyPanel');
+  if(historyPanel.style.transform === 'translateX(0px)') {
+    historyPanel.style.transform = 'translateX(100%)';
+  } else {
+    historyPanel.style.transform = 'translateX(0)';
+  }
+}
+let currentOperation = document.querySelector('.current-operation');
+let previousOperation = document.querySelector('.previous-operation');
+let currentNumber = '0';
+let previousNumber = '';
+let operation = null;
+let shouldResetScreen = false;
+function updateDisplay() {
+currentOperation.textContent = currentNumber;
+if(operation != null) {
+previousOperation.textContent = `${previousNumber} ${operation}`;
+} else {
+previousOperation.textContent = '';
+}
+}
+function appendNumber(number) {
+if(currentNumber === '0' && number !== '.') {
+currentNumber = '';
+}
+if(shouldResetScreen) {
+currentNumber = '';
+shouldResetScreen = false;
+}
+if(number === '.' && currentNumber.includes('.')) return;
+currentNumber += number;
+updateDisplay();
+}
+function appendOperation(op) {
+if(operation !== null) calculate();
+previousNumber = currentNumber;
+operation = op;
+shouldResetScreen = true;
+updateDisplay();
+}
+function addToHistory(expression, result) {
+const historyList = document.getElementById('historyList');
+const historyItem = document.createElement('div');
+historyItem.className = 'p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer';
+historyItem.innerHTML = `
+<div class="text-sm text-gray-500">${expression}</div>
+<div class="text-lg font-medium">${result}</div>
+`;
+historyItem.addEventListener('click', () => {
+currentNumber = result.toString();
+updateDisplay();
+});
+historyList.insertBefore(historyItem, historyList.firstChild);
+}
+function calculate() {
+if(operation === null || shouldResetScreen) return;
+let computation;
+const prev = parseFloat(previousNumber);
+const current = parseFloat(currentNumber);
+if(isNaN(prev) || isNaN(current)) return;
+switch(operation) {
+case '+':
+computation = prev + current;
+break;
+case '-':
+computation = prev - current;
+break;
+case '×':
+computation = prev * current;
+break;
+case '÷':
+if(current === 0) {
+currentNumber = 'Error';
+previousNumber = '';
+operation = null;
+updateDisplay();
+return;
+}
+computation = prev / current;
+break;
+case '%':
+computation = prev % current;
+break;
+default:
+return;
+}
+const expression = `${prev} ${operation} ${current}`;
+currentNumber = computation.toString();
+addToHistory(expression, computation);
+operation = null;
+previousNumber = '';
+updateDisplay();
+}
+function clearAll() {
+currentNumber = '0';
+previousNumber = '';
+operation = null;
+updateDisplay();
+}
+function deleteLast() {
+const display = document.querySelector('.current-operation');
+display.classList.add('text-red-500');
+setTimeout(() => {
+display.classList.remove('text-red-500');
+}, 150);
+if(currentNumber.length === 1) {
+currentNumber = '0';
+} else {
+currentNumber = currentNumber.slice(0, -1);
+}
+updateDisplay();
+}
+document.addEventListener('keydown', (event) => {
+if(event.key >= '0' && event.key <= '9' || event.key === '.') {
+appendNumber(event.key);
+}
+if(event.key === '+' || event.key === '-' || event.key === '*' || event.key === '/' || event.key === '%') {
+let op = event.key;
+if(op === '*') op = '×';
+if(op === '/') op = '÷';
+appendOperation(op);
+}
+if(event.key === 'Enter' || event.key === '=') {
+calculate();
+}
+if(event.key === 'Backspace') {
+deleteLast();
+}
+if(event.key === 'Escape') {
+clearAll();
+}
+});
+</script>
+</body>
+</html>
